@@ -7,23 +7,25 @@
   },
   "configurePresets": [
     {
-      "name": "debug",
+      "name": "ConfigureLinuxGccDebug",
       "displayName": "Linux GCC Debug",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/debug",
+      "binaryDir": "${sourceDir}/out/${hostSystemName}/build/${presetName}",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/${hostSystemName}/install/${presetName}",
         "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchains/linux-gcc.cmake",
         "BUILD_TESTING": "ON"
       }
     },
     {
-      "name": "release",
+      "name": "ConfigureLinuxGccRelease",
       "displayName": "Linux GCC Release",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/release",
+      "binaryDir": "${sourceDir}/out/${hostSystemName}/build/${presetName}",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/${hostSystemName}/install/${presetName}",
         "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchains/linux-gcc.cmake",
         "BUILD_TESTING": "ON"
       }
@@ -31,25 +33,25 @@
   ],
   "buildPresets": [
     {
-      "name": "debug",
-      "configurePreset": "debug"
+      "name": "BuildLinuxGccDebug",
+      "configurePreset": "ConfigureLinuxGccDebug"
     },
     {
-      "name": "release",
-      "configurePreset": "release"
+      "name": "BuildLinuxGccRelease",
+      "configurePreset": "ConfigureLinuxGccRelease"
     }
   ],
   "testPresets": [
     {
-      "name": "debug",
-      "configurePreset": "debug",
+      "name": "TestLinuxGccDebug",
+      "configurePreset": "ConfigureLinuxGccDebug",
       "output": {
         "outputOnFailure": true
       }
     },
     {
-      "name": "release",
-      "configurePreset": "release",
+      "name": "TestLinuxGccRelease",
+      "configurePreset": "ConfigureLinuxGccRelease",
       "output": {
         "outputOnFailure": true
       }
@@ -57,38 +59,38 @@
   ],
   "workflowPresets": [
     {
-      "name": "debug",
+      "name": "WorkflowLinuxGccDebug",
       "displayName": "Linux GCC Debug Pipeline",
       "steps": [
         {
           "type": "configure",
-          "name": "debug"
+          "name": "ConfigureLinuxGccDebug"
         },
         {
           "type": "build",
-          "name": "debug"
+          "name": "BuildLinuxGccDebug"
         },
         {
           "type": "test",
-          "name": "debug"
+          "name": "TestLinuxGccDebug"
         }
       ]
     },
     {
-      "name": "release",
+      "name": "WorkflowLinuxGccRelease",
       "displayName": "Linux GCC Release Pipeline",
       "steps": [
         {
           "type": "configure",
-          "name": "release"
+          "name": "ConfigureLinuxGccRelease"
         },
         {
           "type": "build",
-          "name": "release"
+          "name": "BuildLinuxGccRelease"
         },
         {
           "type": "test",
-          "name": "release"
+          "name": "TestLinuxGccRelease"
         }
       ]
     }
