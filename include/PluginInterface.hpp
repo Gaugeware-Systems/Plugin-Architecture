@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string_view>
-
+#include <concepts>
 namespace plugin_demo {
 
 /**
@@ -22,5 +22,13 @@ public:
 // Function pointer signatures for C-linkage factory and deallocation hooks
 using CreatePluginFn = PluginInterface* (*)();
 using DestroyPluginFn = void (*)(PluginInterface*);
+
+template <typename T>
+concept PluginInterfaceConcept = requires(T plugin) {
+    { plugin.name() } -> std::convertible_to<std::string_view>;
+    { plugin.version() } -> std::convertible_to<std::string_view>;
+    { plugin.execute() } -> std::same_as<void>;
+    { plugin.calculate(0.0, 0.0) } -> std::convertible_to<double>;
+};
 
 } // namespace plugin_demo

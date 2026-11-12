@@ -38,6 +38,6 @@ add_subdirectory(plugins)
 
 if (BUILD_TESTING)
     add_test(NAME plugin_load
-        COMMAND host_app "$<TARGET_FILE:sample_plugin>"
+        COMMAND host_app -p "$<TARGET_FILE:sample_plugin>"
     )
 endif()
