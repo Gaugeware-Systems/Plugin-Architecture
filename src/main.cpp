@@ -3,42 +3,74 @@
 #include <iostream>
 #include <filesystem>
 #include <string>
+#include <boost/program_options.hpp>
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 
 int main(int argc, char* argv[]) {
-    std::cout << "=========================================\n";
-    std::cout << " C++20 Dynamic Plugin Architecture Demo  \n";
-    std::cout << "=========================================\n\n";
+    // Create the main logger for the host application
+    auto logger = spdlog::stdout_color_mt("Host");
+
+    logger->info("=========================================");
+    logger->info(" C++20 Dynamic Plugin Architecture Demo  ");
+    logger->info("=========================================");
+    logger->info("");
 
     // Determine plugin path from CLI argument or default build location
-    std::filesystem::path plugin_path = "plugins/sample_plugin.so";
-    if (argc > 1) {
-        plugin_path = argv[1];
+    std::filesystem::path pluginPath;
+    std::filesystem::path pluginFolder = "plugins";
+
+    boost::program_options::options_description desc("Allowed options");
+    desc.add_options()
+        ("help,h",
+            "Show help message")
+        ("plugin,p", boost::program_options::value<std::string>()->default_value("sample_plugin.so"),
+            "Path to the plugin shared library");
+
+    boost::program_options::variables_map vm;
+    try {
+        boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
+        boost::program_options::notify(vm);
+
+        if (vm.count("help")) {
+            std::cout << desc << "\n";
+            return 0;
+        }
+
+        if (vm.count("plugin")) {
+            pluginPath = vm["plugin"].as<std::string>();
+            logger->info("Using plugin path: {}", pluginPath.string());
+        }
+    } catch (const std::exception& ex) {
+        std::cerr << "[Host Error] " << ex.what() << "\n";
+        return 1;
     }
 
     try {
-        std::cout << "[Host] Attempting to load plugin from: " << plugin_path << "\n";
+        std::cout << "[Host] Attempting to load plugin from: " << pluginPath << "\n";
 
         {
             // Scope block to verify RAII destruction and library unload
             std::cout << "[Host] Entering scoped block for plugin usage...\n";
-            plugin_demo::PluginPtr plugin = plugin_demo::PluginLoader::load(plugin_path);
+            plugin_demo::PluginPtr plugin = plugin_demo::PluginLoader::load(pluginPath);
 
-            std::cout << "[Host] Successfully loaded plugin!\n";
-            std::cout << "[Host]   - Plugin Name:    " << plugin->name() << "\n";
-            std::cout << "[Host]   - Plugin Version: " << plugin->version() << "\n";
+            // Convert this to logger output
+            logger->info("[Host] Successfully loaded plugin!");
+            logger->info("[Host]   - Plugin Name:    {}", plugin->name());
+            logger->info("[Host]   - Plugin Version: {}", plugin->version());
 
-            std::cout << "[Host] Invoking plugin->execute():\n";
+            logger->info("[Host] Invoking plugin->execute()...");
             plugin->execute();
 
             double a = 5.0;
             double b = 10.0;
             double result = plugin->calculate(a, b);
-            std::cout << "[Host] Invoking plugin->calculate(" << a << ", " << b << ") = " << result << "\n";
+            logger->info("[Host] Invoking plugin->calculate({0}, {1}) = {2}", a, b, result);
 
-            std::cout << "[Host] Exiting scoped block (plugin unique_ptr will now be destroyed)...\n";
+            logger->info("[Host] Exiting scoped block (plugin unique_ptr will now be destroyed)...");
         }
 
-        std::cout << "[Host] Scoped block exited. Plugin object and shared library unloaded safely via RAII.\n";
+        logger->info("[Host] Scoped block exited. Plugin object and shared library unloaded safely via RAII.");
 
     } catch (const std::exception& ex) {
         std::cerr << "[Host Error] " << ex.what() << "\n";

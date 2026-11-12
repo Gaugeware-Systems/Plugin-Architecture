@@ -64,6 +64,8 @@ Prerequisites
 
 - CMake 3.20 or newer
 - A C++20-compliant compiler (e.g. GCC 10+, Clang 12+)
+- Ninja
+- Boost.Program_options development files
 - Linux / POSIX dynamic linker (``libdl``)
 
 Build
@@ -71,8 +73,14 @@ Build
 
 .. code-block:: bash
 
-    cmake -B build -S .
-    cmake --build build
+    # Configure, build, and test a Debug or Release configuration
+    cmake --preset debug
+    cmake --build --preset debug
+    ctest --preset debug
+
+    cmake --preset release
+    cmake --build --preset release
+    ctest --preset release
 
 Run
 ---
