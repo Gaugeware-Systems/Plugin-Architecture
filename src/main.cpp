@@ -42,30 +42,31 @@ int main(int argc, char* argv[]) {
             logger->info("Using plugin path: {}", pluginPath.string());
         }
     } catch (const std::exception& ex) {
-        std::cerr << "[Host Error] " << ex.what() << "\n";
+        logger->error("Error parsing command line arguments: {}", ex.what());
         return 1;
     }
 
     try {
-        std::cout << "[Host] Attempting to load plugin from: " << pluginPath << "\n";
+        logger->info("Attempting to load plugin from: {}", pluginPath.string());
 
         {
             // Scope block to verify RAII destruction and library unload
-            std::cout << "[Host] Entering scoped block for plugin usage...\n";
+            logger->info("Entering scoped block for plugin usage...");
+            logger->info("Loading plugin from: {}", pluginPath.string());
             plugin_demo::PluginPtr plugin = plugin_demo::PluginLoader::load(pluginPath);
 
             // Convert this to logger output
-            logger->info("[Host] Successfully loaded plugin!");
-            logger->info("[Host]   - Plugin Name:    {}", plugin->name());
-            logger->info("[Host]   - Plugin Version: {}", plugin->version());
+            logger->info("Successfully loaded plugin!");
+            logger->info("  - Plugin Name:    {}", plugin->name());
+            logger->info("  - Plugin Version: {}", plugin->version());
 
-            logger->info("[Host] Invoking plugin->execute()...");
+            logger->info("Invoking plugin->execute()...");
             plugin->execute();
 
             double a = 5.0;
             double b = 10.0;
             double result = plugin->calculate(a, b);
-            logger->info("[Host] Invoking plugin->calculate({0}, {1}) = {2}", a, b, result);
+            logger->info("Invoking plugin->calculate({0}, {1}) = {2}", a, b, result);
 
             logger->info("[Host] Exiting scoped block (plugin unique_ptr will now be destroyed)...");
         }
@@ -73,7 +74,7 @@ int main(int argc, char* argv[]) {
         logger->info("[Host] Scoped block exited. Plugin object and shared library unloaded safely via RAII.");
 
     } catch (const std::exception& ex) {
-        std::cerr << "[Host Error] " << ex.what() << "\n";
+        logger->error("Error occurred while loading or using plugin: {}", ex.what());
         return 1;
     }
 
